@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Gerenciador de Tarefas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Variáveis do tema claro (padrão) */
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #334155;
+      --title-color: #1e293b;
+      --accent-color: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --secondary-color: #e2e8f0;
+      --danger-color: #ef4444;
+      --danger-hover: #dc2626;
+      --completed-color: #10b981;
+      --completed-hover: #059669;
+      --edit-color: #f59e0b;
+      --edit-hover: #d97706;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --time-color: #94a3b8;
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+    }
+
+    /* Tema escuro */
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #e2e8f0;
+      --title-color: #f8fafc;
+      --secondary-color: #334155;
+      --time-color: #cbd5e1;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+      color-scheme: dark;
+    }
+
+    /* Reset e estilos globais */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      background-color: var(--card-bg);
+      box-shadow: var(--shadow);
+      padding: 2rem 1.5rem;
+      z-index: 10;
+      transition: var(--transition);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      margin-left: 0.75rem;
+    }
+
+    .sidebar-content {
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 70px);
+      justify-content: space-between;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar-item {
+      margin-bottom: 0.75rem;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+    }
+
+    .sidebar-item a {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      color: var(--text-color);
+      text-decoration: none;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+    }
+
+    .sidebar-item a:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .sidebar-item i {
+      margin-right: 0.75rem;
+      font-size: 1.2rem;
+      color: var(--accent-color);
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      color: var(--danger-color);
+      border: none;
+      background: none;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      text-align: left;
+      width: 100%;
+    }
+
+    .logout-btn:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .logout-btn i {
+      margin-right: 0.75rem;
+      font-size: 1.2rem;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 2rem;
+      transition: var(--transition);
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-title {
+      font-size: 1.75rem;
+      color: var(--title-color);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      color: var(--time-color);
+      font-weight: 400;
+      font-size: 1rem;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      color: white;
+      margin-right: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      color: var(--title-color);
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    form input, form select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--secondary-color);
+      border-radius: var(--border-radius);
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      transition: var(--transition);
+    }
+
+    form input:focus, form select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+
+    .checkbox-container input {
+      width: auto;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: var(--border-radius);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 1rem;
+      border-radius: var(--border-radius);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    table th, table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--secondary-color);
+    }
+
+    table th {
+      font-weight: 600;
+      color: var(--title-color);
+      background-color: var(--card-bg);
+    }
+
+    table tr:hover {
+      background-color: rgba(226, 232, 240, 0.3);
+    }
+
+    [data-theme="dark"] table tr:hover {
+      background-color: rgba(51, 65, 85, 0.5);
+    }
+
+    .action-btn {
+      padding: 0.4rem 0.75rem;
+      border: none;
+      border-radius: var(--border-radius);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-right: 0.5rem;
+    }
+
+    .btn-edit {
+      background-color: var(--edit-color);
+      color: white;
+    }
+
+    .btn-edit:hover {
+      background-color: var(--edit-hover);
+    }
+
+    .btn-delete {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-urgent {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: var(--edit-color);
+    }
+
+    .badge-completed {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: var(--completed-color);
+    }
+
+    .badge-pending {
+      background-color: rgba(148, 163, 184, 0.2);
+      color: var(--text-color);
+    }
+
+    .text-completed {
+      text-decoration: line-through;
+      color: var(--time-color);
+    }
+
+    .section-divider {
+      height: 1px;
+      background-color: var(--secondary-color);
+      margin: 1.5rem 0;
+    }
+
+    /* Controle do tema */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 0.5rem 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle-icon {
+      font-size: 1.2rem;
+      margin-right: 0.5rem;
+      color: var(--accent-color);
+    }
+
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--secondary-color);
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent-color);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 80px;
+        padding: 1.5rem 0.75rem;
+      }
+
+      .logo, .sidebar-item span {
+        display: none;
+      }
+
+      .sidebar-item i {
+        margin-right: 0;
+      }
+
+      .main-content {
+        margin-left: 80px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .main-content {
+        padding: 1.5rem;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .theme-toggle {
+        margin-top: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        margin-left: 0;
+        padding: 1rem;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 20;
+        background: var(--accent-color);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Menu toggle para mobile -->
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-tasks"></i>
+      <span class="logo">Tarefas</span>
+    </div>
+    <div class="sidebar-content">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a href="#">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#">
+            <i class="fas fa-user"></i>
+            <span>Usuários</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Tarefas</span>
+          </a>
+        </li>
+      </ul>
+      <button class="logout-btn" id="logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Conteúdo principal -->
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Painel do Administrador</h1>
+        <p class="page-subtitle">Gerencie usuários e tarefas do sistema</p>
+      </div>
+      <div class="theme-toggle">
+        <i class="fas fa-sun theme-toggle-icon" id="themeIcon"></i>
+        <label class="theme-switch">
+          <input type="checkbox" id="themeToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Card: Criação de Usuário -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-user-plus"></i>
+          </div>
+          <h2 class="card-title">Criar Usuário</h2>
+        </div>
+        <form id="createUserForm">
+          <input type="text" id="newUsername" placeholder="Nome do usuário" required>
+          <input type="password" id="newPassword" placeholder="Senha" required>
+          <button type="submit" class="btn btn-primary">Criar Usuário</button>
+        </form>
+
+        <div class="section-divider"></div>
+
+        <h3 class="card-title" style="margin-bottom: 1rem;">Usuários Cadastrados</h3>
+        <div class="table-container">
+          <table id="usersTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuário</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Usuários serão listados aqui -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Card: Criação de Tarefa -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-plus-circle"></i>
+          </div>
+          <h2 class="card-title">Criar Tarefa</h2>
+        </div>
+        <form id="createTaskForm">
+          <select id="userSelect" required>
+            <option value="" disabled selected>Selecione um usuário</option>
+            <!-- Opções dos usuários serão preenchidas aqui -->
+          </select>
+          <input type="text" id="taskText" placeholder="Descrição da tarefa" required>
+          <label class="checkbox-container">
+            <input type="checkbox" id="urgentCheckbox">
+            Marcar como Urgente
+          </label>
+          <button type="submit" class="btn btn-primary">Criar Tarefa</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Card: Lista de Tarefas com scroll -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <i class="fas fa-list-ul"></i>
+        </div>
+        <h2 class="card-title">Lista de Tarefas</h2>
+      </div>
+      <div class="table-container">
+        <table id="tasksTable">
+          <thead>
+            <tr>
+              <th width="8%">ID</th>
+              <th width="15%">Usuário</th>
+              <th width="35%">Tarefa</th>
+              <th width="18%">Criado em</th>
+              <th width="12%">Status</th>
+              <th width="12%">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Tarefas serão listadas aqui -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Menu toggle para mobile
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+      });
+    }
+    
+    // Controle de Tema
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    
+    // Verifica se há tema salvo no localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeToggle.checked = true;
+      themeIcon.classList.replace('fa-sun', 'fa-moon');
+    }
+    
+    // Função para alternar entre temas
+    function toggleTheme() {
+      if (themeToggle.checked) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        themeIcon.classList.replace('fa-sun', 'fa-moon');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        themeIcon.classList.replace('fa-moon', 'fa-sun');
+      }
+    }
+    
+    themeToggle.addEventListener('change', toggleTheme);
+    
+    // Verifica se o usuário logado é admin
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || currentUser.role !== 'admin') {
+      window.location.href = 'login.html';
+    }
+    
+    // Funções auxiliares para manipulação do localStorage
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('users')) || [];
+    }
+    function saveUsers(users) {
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+    function getTasks() {
+      return JSON.parse(localStorage.getItem('tasks')) || [];
+    }
+    function saveTasks(tasks) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+    function formatDateTime(dateString) {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${day}/${month}/${year} às ${hours}:${minutes}`;
+    }
+    
+    // Logout
+    document.getElementById('logout').addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    });
+    
+    // Renderiza a lista de usuários e preenche o dropdown
+    function renderUsers() {
+      const users = getUsers().filter(u => u.role !== 'admin');
+      const usersTableBody = document.querySelector('#usersTable tbody');
+      const userSelect = document.getElementById('userSelect');
+      usersTableBody.innerHTML = '';
+      userSelect.innerHTML = '<option value="" disabled selected>Selecione um usuário</option>';
+      
+      users.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${user.id}</td>
+          <td>${user.username}</td>
+          <td>
+            <button class="action-btn btn-delete" onclick="deleteUser('${user.id}')">
+              <i class="fas fa-trash-alt"></i> Excluir
+            </button>
+          </td>
+        `;
+        usersTableBody.appendChild(tr);
+        
+        // Preenche o dropdown
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = user.username;
+        userSelect.appendChild(option);
+      });
+    }
+    
+    // Criação de usuário
+    document.getElementById('createUserForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('newUsername').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      if (username && password) {
+        const users = getUsers();
+        if (users.some(u => u.username === username)) {
+          alert('Usuário já existe!');
+          return;
+        }
+        const newUser = {
+          id: Date.now().toString(),
+          username,
+          password,
+          role: 'user'
+        };
+        users.push(newUser);
+        saveUsers(users);
+        renderUsers();
+        document.getElementById('createUserForm').reset();
+      }
+    });
+    
+    // Exclui usuário e suas tarefas associadas
+    function deleteUser(userId) {
+      if (confirm('Tem certeza que deseja excluir este usuário?')) {
+        let users = getUsers();
+        users = users.filter(u => u.id !== userId);
+        saveUsers(users);
+        
+        let tasks = getTasks();
+        tasks = tasks.filter(t => t.userId !== userId);
+        saveTasks(tasks);
+        
+        renderUsers();
+        renderTasks();
+      }
+    }
+    window.deleteUser = deleteUser;
+    
+    // Criação de tarefa
+    document.getElementById('createTaskForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const userId = document.getElementById('userSelect').value;
+      const taskText = document.getElementById('taskText').value.trim();
+      const urgent = document.getElementById('urgentCheckbox').checked;
+      if (userId && taskText) {
+        const tasks = getTasks();
+        const newTask = {
+          id: Date.now().toString(),
+          userId,
+          text: taskText,
+          urgent,
+          completed: false,
+          date: new Date().toISOString()
+        };
+        tasks.push(newTask);
+        saveTasks(tasks);
+        renderTasks();
+        document.getElementById('createTaskForm').reset();
+      }
+    });
+    
+    // Renderiza a lista de tarefas
+    function renderTasks() {
+      const tasks = getTasks();
+      const users = getUsers();
+      const tasksTableBody = document.querySelector('#tasksTable tbody');
+      tasksTableBody.innerHTML = '';
+      
+      tasks.forEach(task => {
+        const user = users.find(u => u.id === task.userId);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${task.id}</td>
+          <td>${user ? user.username : 'Usuário não encontrado'}</td>
+          <td class="${task.completed ? 'text-completed' : ''}">
+            ${task.text}
+            ${task.urgent ? '<span class="badge badge-urgent">Urgente</span>' : ''}
+          </td>
+          <td>${formatDateTime(task.date)}</td>
+          <td>
+            ${
+              task.completed 
+                ? '<span class="badge badge-completed">Concluída</span>' 
+                : '<span class="badge badge-pending">Pendente</span>'
+            }
+          </td>
+          <td>
+            <button class="action-btn btn-edit" onclick="editTask('${task.id}')">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="action-btn btn-delete" onclick="deleteTask('${task.id}')">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        `;
+        tasksTableBody.appendChild(tr);
+      });
+    }
+    window.renderTasks = renderTasks;
+    
+    // Exclui tarefa
+    function deleteTask(taskId) {
+      if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+        let tasks = getTasks();
+        tasks = tasks.filter(t => t.id !== taskId);
+        saveTasks(tasks);
+        renderTasks();
+      }
+    }
+    window.deleteTask = deleteTask;
+    
+    // Edita tarefa utilizando prompt (para simplificar)
+    function editTask(taskId) {
+      const tasks = getTasks();
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        const newText = prompt('Editar tarefa:', task.text);
+        if (newText !== null && newText.trim() !== '') {
+          task.text = newText.trim();
+          saveTasks(tasks);
+          renderTasks();
+        }
+      }
+    }
+    window.editTask = editTask;
+    
+    // Renderizações iniciais
+    renderUsers();
+    renderTasks();
+  </script>
+</body>
+</html>

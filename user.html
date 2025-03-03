@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuário - Gerenciador de Tarefas</title>
+  <style>
+    :root {
+      --bg-color: #1f2937;
+      --card-bg: #111827;
+      --text-color: #f3f4f6;
+      --accent-color: #6366f1;
+      --secondary-color: #374151;
+      --danger-color: #f87171;
+      --completed-color: #34d399;
+      --edit-color: #fbbf24;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      --time-color: #9ca3af;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      padding: 20px;
+      margin: 0;
+      color: var(--text-color);
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--text-color);
+    }
+    .tasks-container {
+      /* Espaçamento entre as tarefas */
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    /* Quando há 7 ou mais tarefas, aplicar scroll */
+    .tasks-container.scrollable {
+      max-height: 500px; /* ajuste conforme necessário */
+      overflow-y: auto;
+      padding-right: 10px; /* para dar espaço à barra de rolagem */
+    }
+    .task-card {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 10px;
+    }
+    .task-card.urgent {
+      border-left: 5px solid var(--edit-color);
+    }
+    .task-card.completed {
+      text-decoration: line-through;
+      color: var(--secondary-color);
+    }
+    .task-time {
+      font-size: 12px;
+      color: var(--time-color);
+    }
+    button {
+      padding: 8px 12px;
+      background-color: var(--completed-color);
+      color: var(--card-bg);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .logout {
+      float: right;
+      cursor: pointer;
+      color: var(--danger-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="logout" id="logout">Sair</span>
+    <h1>Painel do Usuário</h1>
+    <div id="tasksContainer" class="tasks-container">
+      <!-- Tarefas serão renderizadas aqui -->
+    </div>
+  </div>
+
+  <script>
+    // Verifica se o usuário logado existe e é do tipo 'user'
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || currentUser.role !== 'user') {
+      window.location.href = 'login.html';
+    }
+
+    // Funções auxiliares para manipulação do localStorage
+    function getTasks() {
+      return JSON.parse(localStorage.getItem('tasks')) || [];
+    }
+    function saveTasks(tasks) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+    function formatDateTime(dateString) {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${day}/${month}/${year} às ${hours}:${minutes}`;
+    }
+
+    // Logout
+    document.getElementById('logout').addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    });
+
+    // Renderiza as tarefas do usuário logado
+    function renderTasks() {
+      const tasksContainer = document.getElementById('tasksContainer');
+      const tasks = getTasks().filter(t => t.userId === currentUser.id);
+      tasksContainer.innerHTML = '';
+
+      // Se houver 7 ou mais tarefas, adiciona a classe "scrollable"
+      if (tasks.length >= 7) {
+        tasksContainer.classList.add('scrollable');
+      } else {
+        tasksContainer.classList.remove('scrollable');
+      }
+
+      if (tasks.length === 0) {
+        tasksContainer.innerHTML = '<p>Você não possui tarefas.</p>';
+        return;
+      }
+
+      tasks.forEach(task => {
+        const taskCard = document.createElement('div');
+        taskCard.className = 'task-card';
+        if (task.urgent) {
+          taskCard.classList.add('urgent');
+        }
+        if (task.completed) {
+          taskCard.classList.add('completed');
+        }
+        taskCard.innerHTML = `
+          <p>${task.text}</p>
+          <span class="task-time">Criado em: ${formatDateTime(task.date)}</span>
+          ${!task.completed ? `<button onclick="completeTask('${task.id}')">Marcar como Concluída</button>` : '<span>Tarefa Concluída</span>'}
+        `;
+        tasksContainer.appendChild(taskCard);
+      });
+    }
+
+    // Função para marcar a tarefa como concluída
+    function completeTask(taskId) {
+      const tasks = getTasks();
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        task.completed = true;
+        saveTasks(tasks);
+        renderTasks();
+      }
+    }
+    window.completeTask = completeTask;
+
+    renderTasks();
+  </script>
+</body>
+</html>
