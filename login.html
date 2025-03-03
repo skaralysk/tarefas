@@ -4,125 +4,302 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Gerenciador de Tarefas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+    
     :root {
-      --bg-color: #1f2937;
-      --card-bg: #111827;
-      --text-color: #f3f4f6;
-      --accent-color: #6366f1;
-      --secondary-color: #374151;
-      --danger-color: #f87171;
-      --completed-color: #34d399;
-      --edit-color: #fbbf24;
-      --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-      --time-color: #9ca3af;
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --accent-color: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --secondary-color: #334155;
+      --input-bg: #293548;
+      --danger-color: #ef4444;
+      --muted-color: #94a3b8;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      --card-border: #374151;
     }
-    /* Reset e estilos globais */
+    
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+    
     body {
       background-color: var(--bg-color);
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-color);
+      position: relative;
+      overflow: hidden;
     }
+    
+    body::before,
+    body::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      z-index: -1;
+    }
+    
+    body::before {
+      background: linear-gradient(to right, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+      top: -100px;
+      right: -100px;
+    }
+    
+    body::after {
+      background: linear-gradient(to left, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+      bottom: -100px;
+      left: -100px;
+    }
+    
     .login-container {
       background-color: var(--card-bg);
-      padding: 40px 30px;
-      border-radius: 10px;
+      padding: 40px;
+      border-radius: 16px;
       box-shadow: var(--shadow);
-      width: 350px;
+      width: 380px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid var(--card-border);
     }
-    .login-container h2 {
+    
+    .login-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .logo {
       text-align: center;
-      margin-bottom: 20px;
-      font-size: 24px;
-      color: var(--text-color);
-    }
-    .user-type {
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
-    .user-type label {
-      font-size: 16px;
-      color: var(--text-color);
-      cursor: pointer;
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--accent-color);
       display: flex;
       align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
-    .user-type input {
-      margin-right: 5px;
+    
+    .logo i {
+      font-size: 24px;
     }
-    .form-group {
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 22px;
+      font-weight: 500;
     }
-    .form-group label {
-      margin-bottom: 5px;
-      color: var(--text-color);
+    
+    .subtitle {
+      text-align: center;
+      color: var(--muted-color);
+      margin-bottom: 30px;
       font-size: 14px;
+      font-weight: 300;
     }
-    .form-group input {
-      padding: 12px;
-      border: 1px solid var(--secondary-color);
-      border-radius: 6px;
-      font-size: 16px;
+    
+    .user-type {
+      display: flex;
+      background-color: var(--secondary-color);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 25px;
+      position: relative;
+    }
+    
+    .user-type label {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      z-index: 1;
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.3s ease;
+      border-radius: 8px;
+      color: var(--muted-color);
+    }
+    
+    .user-type input {
+      display: none;
+    }
+    
+    .user-type input:checked + span {
       color: var(--text-color);
-      background-color: var(--card-bg);
-      outline: none;
-      transition: border-color 0.3s;
     }
-    .form-group input:focus {
-      border-color: var(--accent-color);
+    
+    .selection-indicator {
+      position: absolute;
+      height: calc(100% - 8px);
+      border-radius: 8px;
+      background-color: var(--accent-color);
+      transition: transform 0.3s ease, width 0.3s ease;
+      top: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
     }
-    .login-button {
+    
+    .user-type input[value="user"]:checked ~ .selection-indicator {
+      transform: translateX(100%);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .form-group label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 14px;
+      color: var(--muted-color);
+      transition: all 0.3s ease;
+      pointer-events: none;
+      padding: 0 4px;
+      transform-origin: left;
+    }
+    
+    .form-group input {
       width: 100%;
       padding: 12px;
+      padding-left: 40px;
+      border: 1px solid var(--secondary-color);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: var(--input-bg);
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .form-group input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+    
+    .form-group i {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      color: var(--muted-color);
+    }
+    
+    .form-group input:focus + i {
+      color: var(--accent-color);
+    }
+    
+    .form-group input:focus ~ label,
+    .form-group input:not(:placeholder-shown) ~ label {
+      top: -8px;
+      left: 12px;
+      font-size: 12px;
+      background-color: var(--card-bg);
+      color: var(--accent-color);
+    }
+    
+    .login-button {
+      width: 100%;
+      padding: 14px;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       background-color: var(--accent-color);
-      color: var(--card-bg);
-      font-size: 18px;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: background-color 0.3s, transform 0.2s;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
+    
     .login-button:hover {
-      background-color: var(--edit-color);
+      background-color: var(--accent-hover);
+      transform: translateY(-2px);
     }
+    
+    .login-button:active {
+      transform: translateY(0);
+    }
+    
     .error {
       text-align: center;
       color: var(--danger-color);
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       font-size: 14px;
+      font-weight: 400;
+      padding: 10px;
+      background-color: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      display: none;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .error.visible {
+      display: block;
+      animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    /* Highlight glow effect */
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
     }
   </style>
 </head>
 <body>
   <div class="login-container">
-    <h2>Login</h2>
-    <div id="error" class="error"></div>
+    <div class="logo">
+      <i class="fas fa-tasks"></i>
+      <span>Tarefast</span>
+    </div>
+    <h2>Bem-vindo(a) de volta</h2>
+    <p class="subtitle">Faça login para continuar</p>
+    
+    <div id="error" class="error">Usuário não encontrado!</div>
+    
     <form id="loginForm">
       <div class="user-type">
         <label>
-          <input type="radio" name="role" value="admin" checked> Admin
+          <input type="radio" name="role" value="admin" checked>
+          <span>Admin</span>
         </label>
         <label>
-          <input type="radio" name="role" value="user"> Usuário
+          <input type="radio" name="role" value="user">
+          <span>Usuário</span>
         </label>
+        <div class="selection-indicator"></div>
       </div>
+      
       <div class="form-group">
-        <label for="username">Usuário</label>
-        <input type="text" id="username" placeholder="Digite seu usuário" required>
+        <input type="text" id="username" placeholder=" " required>
+        <i class="fas fa-user"></i>
+        <label for="username">Nome de usuário</label>
       </div>
-      <button type="submit" class="login-button">Entrar</button>
+      
+      <button type="submit" class="login-button">
+        <i class="fas fa-sign-in-alt"></i>
+        Entrar
+      </button>
     </form>
   </div>
 
@@ -144,6 +321,21 @@
     }
     initDefaultAdmin();
 
+    // Adicionar evento para animar o seletor
+    document.querySelectorAll('input[name="role"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        // Pega o seletor
+        const indicator = document.querySelector('.selection-indicator');
+        
+        // Anima de acordo com o valor selecionado
+        if (this.value === 'user') {
+          indicator.style.transform = 'translateX(100%)';
+        } else {
+          indicator.style.transform = 'translateX(0)';
+        }
+      });
+    });
+
     const loginForm = document.getElementById('loginForm');
     const errorDiv = document.getElementById('error');
 
@@ -156,10 +348,21 @@
       let user = users.find(u => u.username === username && u.role === selectedRole);
 
       if (user) {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        window.location.href = (user.role === 'admin') ? 'admin.html' : 'user.html';
+        // Adiciona efeito de sucesso
+        document.querySelector('.login-button').style.backgroundColor = '#10b981';
+        document.querySelector('.login-button').innerHTML = '<i class="fas fa-check"></i> Sucesso!';
+        
+        setTimeout(() => {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          window.location.href = (user.role === 'admin') ? 'admin.html' : 'user.html';
+        }, 800);
       } else {
         errorDiv.textContent = 'Usuário não encontrado!';
+        errorDiv.classList.add('visible');
+        
+        setTimeout(() => {
+          errorDiv.classList.remove('visible');
+        }, 3000);
       }
     });
   </script>
